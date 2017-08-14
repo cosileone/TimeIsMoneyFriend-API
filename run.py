@@ -1,23 +1,35 @@
 from flask import Flask, jsonify, request
-from flask_mysqldb import MySQL
+# from flask_mysqldb import MySQL
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['MYSQL_HOST'] = 'newswire.theunderminejournal.com'
-app.config['MYSQL_DB'] = 'newsstand'
-mysql = MySQL(app)
+# app.config['MYSQL_HOST'] = 'newswire.theunderminejournal.com'
+# app.config['MYSQL_DB'] = 'newsstand'
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root@newswire.theunderminejournal.com/newsstand"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+mysql = SQLAlchemy(app)
+
+mysql.Model.metadata.reflect(mysql.engine)
+
+
+class Item(mysql.Model):
+    __table__ = mysql.Model.metadata.tables['tblDBCItem']
+
+    # def __repr__(self):
+    #     return "<{} - {}>".format(self.id, self.name_enus)
 
 
 @app.route('/items', methods=['GET'])
 def items():
-    sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
-    cursor = mysql.connection.cursor()
-    cursor.execute(sql)
-    data = cursor.fetchall()
-
+    # sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
+    # cursor = mysql.connection.cursor()
+    # cursor.execute(sql)
+    # data = cursor.fetchall()
+    data = Item.query.all()
     results = []
     for row in data:
         item = {}
-        for tup in zip([column[0] for column in cursor.description], row):
+        for tup in zip([str(column) for column in Item.metadata.tables['tblDBCItem'].columns.keys()], row[column]):
             item[tup[0]] = tup[1]
 
         results.append(item)
