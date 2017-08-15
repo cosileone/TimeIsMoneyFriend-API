@@ -1,13 +1,11 @@
-from flask import Flask, jsonify, request
-from flask_mysqldb import MySQL
+from flask import Blueprint, jsonify, request
 
-app = Flask(__name__)
-app.config['MYSQL_HOST'] = 'newswire.theunderminejournal.com'
-app.config['MYSQL_DB'] = 'newsstand'
-mysql = MySQL(app)
+items = Blueprint('items', __name__)
+
+from app import mysql
 
 
-@app.route('/items', methods=['GET'])
+@items.route('/items', methods=['GET'])
 def list_items():
     sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
     cursor = mysql.connection.cursor()
@@ -25,7 +23,7 @@ def list_items():
     return jsonify({"items": results})
 
 
-@app.route('/items/<int:item_id>', methods=['GET'])
+@items.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
     sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = {} AND auctionable = true;'''.format(item_id)
     cursor = mysql.connection.cursor()
@@ -42,7 +40,7 @@ def get_item(item_id):
     return jsonify(item)
 
 
-@app.route('/item/', methods=['GET'])
+@items.route('/item/', methods=['GET'])
 def resolve_item_name():
     item_name = request.args.get('name')
     sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE "%{}%" '''.format(item_name)
@@ -62,8 +60,3 @@ def resolve_item_name():
         return jsonify({"error": "item not found"}), 404
 
     return jsonify({"items": results})
-
-if __name__ == "__main__":
-    host = "127.0.0.1"
-    port = 5000
-    app.run(debug=True)
