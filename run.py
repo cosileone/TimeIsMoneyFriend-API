@@ -8,7 +8,7 @@ mysql = MySQL(app)
 
 
 @app.route('/items', methods=['GET'])
-def items():
+def list_items():
     sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
     cursor = mysql.connection.cursor()
     cursor.execute(sql)
@@ -33,16 +33,13 @@ def get_item(item_id):
     data = cursor.fetchone()
 
     if data:
-        results = []
         item = {}
         for tup in zip([column[0] for column in cursor.description], data):
             item[tup[0]] = tup[1]
-
-        results.append(item)
     else:
         return jsonify({"error": "item not found"}), 404
 
-    return jsonify(results)
+    return jsonify(item)
 
 
 @app.route('/item/', methods=['GET'])
