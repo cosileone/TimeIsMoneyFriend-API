@@ -38,7 +38,7 @@ def get_item(item_id):
         for tup in zip([column[0] for column in cursor.description], data):
             item[tup[0]] = tup[1]
 
-            results.append(item)
+        results.append(item)
     else:
         return jsonify({"error": "item not found"}), 404
 
