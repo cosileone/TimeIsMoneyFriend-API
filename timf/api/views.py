@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 
 items = Blueprint('items', __name__)
 
-from app import mysql
+from run import mysql
 
 
 @items.route('/items', methods=['GET'])
