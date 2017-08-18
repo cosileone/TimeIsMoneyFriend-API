@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 from timf.api import api
 from timf.website import site
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='timf/website/static')
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 mysql = MySQL(app)
