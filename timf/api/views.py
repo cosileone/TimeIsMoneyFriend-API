@@ -1,11 +1,10 @@
-from flask import Blueprint, jsonify, request
-
-items = Blueprint('items', __name__)
+from flask import jsonify, request
+from . import api
 
 from run import mysql
 
 
-@items.route('/items', methods=['GET'])
+@api.route('/items', methods=['GET'])
 def list_items():
     sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
     cursor = mysql.connection.cursor()
@@ -23,7 +22,7 @@ def list_items():
     return jsonify({"items": results})
 
 
-@items.route('/items/<int:item_id>', methods=['GET'])
+@api.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
     sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = {} AND auctionable = true;'''.format(item_id)
     cursor = mysql.connection.cursor()
@@ -40,7 +39,7 @@ def get_item(item_id):
     return jsonify(item)
 
 
-@items.route('/item/', methods=['GET'])
+@api.route('/item/', methods=['GET'])
 def resolve_item_name():
     item_name = request.args.get('name')
     sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE "%{}%" '''.format(item_name)

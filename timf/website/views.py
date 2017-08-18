@@ -1,9 +1,9 @@
 from flask import render_template
 # from flask_login import login_required
 
-from . import home
+from . import site
 
 
-@home.route('/')
+@site.route('/')
 def homepage():
     return render_template('base.html')
