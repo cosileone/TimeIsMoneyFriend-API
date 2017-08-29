@@ -8,7 +8,8 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 
     <script type="text/javascript" src="https://unpkg.com/jquery"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vendor/vue.js') }}"></script>
+    <script type="text/javascript" src="https://unpkg.com/vue"></script>
+    <script type="text/javascript" src="https://unpkg.com/vuex"></script>
 </head>
 <body>
 <h2 id="title">Harrumph</h2>
@@ -18,16 +19,37 @@
 {% raw %}
 <div id="app">
     {{ message }}
+    {{ count }}
 </div>
 {% endraw %}
 
 {% block javascript %}
 {% endblock javascript %}
 <script>
-    var app = new Vue({
+
+    const store = new Vuex.Store({
+        state: {
+            count: 0,
+            message: "Hello World",
+        },
+        mutations: {
+            
+        }
+    });
+
+    const app = new Vue({
         el: '#app',
+        store,
+        components: {},
+        computed: {
+            count() {
+                return store.state.count
+            },
+            message() {
+                return store.state.message
+            }
+        },
         data: {
-            message: 'Hello World'
         }
     });
 </script>
