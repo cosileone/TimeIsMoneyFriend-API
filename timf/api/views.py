@@ -1,7 +1,8 @@
 from flask import jsonify, request
-from . import api
 
+from . import api
 from run import mysql
+from utils import result_dictionary
 
 
 @api.route('/items', methods=['GET'])
@@ -13,9 +14,7 @@ def list_items():
 
     results = []
     for row in data:
-        item = {}
-        for tup in zip([column[0] for column in cursor.description], row):
-            item[tup[0]] = tup[1]
+        item = result_dictionary(cursor, row)
 
         results.append(item)
 
@@ -30,9 +29,7 @@ def get_item(item_id):
     data = cursor.fetchone()
 
     if data:
-        item = {}
-        for tup in zip([column[0] for column in cursor.description], data):
-            item[tup[0]] = tup[1]
+        item = result_dictionary(cursor, data)
     else:
         return jsonify({"error": "item not found"}), 404
 
@@ -47,7 +44,7 @@ def resolve_item_name():
     if query:
         sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s;'''
         cursor = mysql.connection.cursor()
-        cursor.execute(sql, ["%" + query + "%",])
+        cursor.execute(sql, ["%" + query + "%", ])
         data = cursor.fetchall()
     else:
         return jsonify({"error": "No item ID or query provided"}), 404
@@ -55,9 +52,7 @@ def resolve_item_name():
     if data:
         results = []
         for row in data:
-            item = {}
-            for tup in zip([column[0] for column in cursor.description], row):
-                item[tup[0]] = tup[1]
+            item = result_dictionary(cursor, row)
 
             results.append(item)
     else:
