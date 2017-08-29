@@ -24,9 +24,9 @@ def list_items():
 
 @api.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
-    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = {} AND auctionable = true;'''.format(item_id)
+    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = %s AND auctionable = true;'''
     cursor = mysql.connection.cursor()
-    cursor.execute(sql)
+    cursor.execute(sql, [item_id])
     data = cursor.fetchone()
 
     if data:
@@ -41,11 +41,16 @@ def get_item(item_id):
 
 @api.route('/item/', methods=['GET'])
 def resolve_item_name():
-    item_name = request.args.get('name')
-    sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE "%{}%" '''.format(item_name)
-    cursor = mysql.connection.cursor()
-    cursor.execute(sql)
-    data = cursor.fetchall()
+    data = []
+    query = request.args.get('name')
+
+    if query:
+        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s;'''
+        cursor = mysql.connection.cursor()
+        cursor.execute(sql, ["%" + query + "%",])
+        data = cursor.fetchall()
+    else:
+        return jsonify({"error": "No item ID or query provided"}), 404
 
     if data:
         results = []
