@@ -1,7 +1,8 @@
 from flask import jsonify, request
-from . import api
 
+from . import api
 from run import mysql
+from utils import result_dictionary
 
 
 @api.route('/items', methods=['GET'])
@@ -13,9 +14,7 @@ def list_items():
 
     results = []
     for row in data:
-        item = {}
-        for tup in zip([column[0] for column in cursor.description], row):
-            item[tup[0]] = tup[1]
+        item = result_dictionary(cursor, row)
 
         results.append(item)
 
@@ -24,15 +23,13 @@ def list_items():
 
 @api.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
-    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = {} AND auctionable = true;'''.format(item_id)
+    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = %s AND auctionable = true;'''
     cursor = mysql.connection.cursor()
-    cursor.execute(sql)
+    cursor.execute(sql, [item_id])
     data = cursor.fetchone()
 
     if data:
-        item = {}
-        for tup in zip([column[0] for column in cursor.description], data):
-            item[tup[0]] = tup[1]
+        item = result_dictionary(cursor, data)
     else:
         return jsonify({"error": "item not found"}), 404
 
@@ -41,18 +38,21 @@ def get_item(item_id):
 
 @api.route('/item/', methods=['GET'])
 def resolve_item_name():
-    item_name = request.args.get('name')
-    sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE "%{}%" '''.format(item_name)
-    cursor = mysql.connection.cursor()
-    cursor.execute(sql)
-    data = cursor.fetchall()
+    data = []
+    query = request.args.get('name')
+
+    if query:
+        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s;'''
+        cursor = mysql.connection.cursor()
+        cursor.execute(sql, ["%" + query + "%", ])
+        data = cursor.fetchall()
+    else:
+        return jsonify({"error": "No item ID or query provided"}), 404
 
     if data:
         results = []
         for row in data:
-            item = {}
-            for tup in zip([column[0] for column in cursor.description], row):
-                item[tup[0]] = tup[1]
+            item = result_dictionary(cursor, row)
 
             results.append(item)
     else:
