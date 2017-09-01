@@ -4,54 +4,83 @@
     <meta charset="UTF-8">
 {#    <title>{% block title %}{% endblock title %}</title>#}
     <title>Time is Money, Friend - Welcome</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+{#    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">#}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/semantic-ui/semantic.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 
     <script type="text/javascript" src="https://unpkg.com/jquery"></script>
     <script type="text/javascript" src="https://unpkg.com/vue"></script>
     <script type="text/javascript" src="https://unpkg.com/vuex"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='vendor/semantic-ui/semantic.js') }}"></script>
 </head>
 <body>
-<h2 id="title">Harrumph</h2>
+<h2 id="title">Time is Money, Friend!</h2>
 {% block body %}
 {% endblock body %}
 
 {% raw %}
 <div id="app">
-    {{ message }}
-    {{ count }}
+    <select id="server-select" v-model="selectedServer" class="ui search selection dropdown">
+        <option :value="null" selected disabled>Choose your Realm</option>
+        <option class="server.region flag" v-for="server in server_list" :key="server.id" :value="server.slug">
+            {{ server.name }} ({{ server.region }})<i class="server.region.toLowerCase() flag"></i>
+        </option>
+    </select>
 </div>
+
 {% endraw %}
 
 {% block javascript %}
 {% endblock javascript %}
 <script>
 
-    const store = new Vuex.Store({
-        state: {
-            count: 0,
-            message: "Hello World",
-        },
-        mutations: {
-            
-        }
+{#    const store = new Vuex.Store({#}
+{#        state: {#}
+{#            count: 0,#}
+{#            message: "Hello World",#}
+{#        },#}
+{#        mutations: {#}
+{#            #}
+{#        }#}
+{#    });#}
+
+    Vue.component('item-form', {
+        template: '#item-form',
     });
 
     const app = new Vue({
         el: '#app',
-        store,
+{#        store,#}
         components: {},
-        computed: {
-            count() {
-                return store.state.count
-            },
-            message() {
-                return store.state.message
-            }
-        },
+        computed: {},
         data: {
+            item_id: null,
+            selectedServer: null,
+            search_query: null,
+            server_list: [],
+            forms: [],
+        },
+        created: function () {
+            this.getServerList();
+        },
+        methods: {
+            getServerList: function () {
+                let vm = this;
+                $.ajax({
+                    url: '/api/realms',
+                    type: 'get'
+                }).always(function (response) {
+                    let list = response['realms'];
+                    for (let i = 0; i < list.length; i++) {
+                        vm.server_list.push(list[i]);
+                    }
+                });
+            },
+
         }
     });
+    $('#server-select').dropdown();
+
 </script>
 </body>
 </html>
