@@ -59,3 +59,19 @@ def resolve_item_name():
         return jsonify({"error": "item not found"}), 404
 
     return jsonify({"items": results})
+
+
+@api.route('/realms', methods=['GET'])
+def list_servers():
+    sql = '''SELECT id, name, region, slug, population, house from tblRealm where region in ('US', 'EU');'''
+    cursor = mysql.connection.cursor()
+    cursor.execute(sql)
+    data = cursor.fetchall()
+
+    results = []
+    for row in data:
+        item = result_dictionary(cursor, row)
+
+        results.append(item)
+
+    return jsonify({"realms": results})
