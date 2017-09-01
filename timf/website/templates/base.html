@@ -5,13 +5,14 @@
 {#    <title>{% block title %}{% endblock title %}</title>#}
     <title>Time is Money, Friend - Welcome</title>
 {#    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">#}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/semantic-ui/semantic.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/semantic-ui/semantic.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 
     <script type="text/javascript" src="https://unpkg.com/jquery"></script>
     <script type="text/javascript" src="https://unpkg.com/vue"></script>
     <script type="text/javascript" src="https://unpkg.com/vuex"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='vendor/semantic-ui/semantic.js') }}"></script>
+    <script type="text/javascript" src="https://unpkg.com/vee-validate"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='vendor/semantic-ui/semantic.min.js') }}"></script>
 </head>
 <body>
 <h2 id="title">Time is Money, Friend!</h2>
@@ -20,12 +21,18 @@
 
 {% raw %}
 <div id="app">
-    <select id="server-select" v-model="selectedServer" class="ui search selection dropdown">
-        <option :value="null" selected disabled>Choose your Realm</option>
-        <option class="server.region flag" v-for="server in server_list" :key="server.id" :value="server.slug">
-            {{ server.name }} ({{ server.region }})<i class="server.region.toLowerCase() flag"></i>
-        </option>
-    </select>
+    <form class="ui form" @submit.prevent="submitSearch">
+        <select id="server-select" class="ui search selection dropdown"
+                v-model="selectedServer" tabindex="2">
+            <option :value="null" selected disabled>Choose your Realm</option>
+            <option class="server.region flag" v-for="server in realmList" :key="server.id" :value="server.slug">
+                {{ server.name }} ({{ server.region }})<i class="server.region.toLowerCase() flag"></i>
+            </option>
+        </select>
+        <input name="name" v-model="searchQuery" @keyup.enter="submitSearch" v-validate="'required'"
+               :class="{'has-error': errors.has('name')}"
+               placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+    </form>
 </div>
 
 {% endraw %}
@@ -44,6 +51,8 @@
 {#        }#}
 {#    });#}
 
+    Vue.use(VeeValidate);
+
     Vue.component('item-form', {
         template: '#item-form',
     });
@@ -54,10 +63,10 @@
         components: {},
         computed: {},
         data: {
-            item_id: null,
+            itemId: null,
             selectedServer: null,
-            search_query: null,
-            server_list: [],
+            searchQuery: null,
+            realmList: [],
             forms: [],
         },
         created: function () {
@@ -70,16 +79,44 @@
                     url: '/api/realms',
                     type: 'get'
                 }).always(function (response) {
-                    let list = response['realms'];
+                    const list = response['realms'];
                     for (let i = 0; i < list.length; i++) {
-                        vm.server_list.push(list[i]);
+                        vm.realmList.push(list[i]);
                     }
                 });
             },
+            submitSearch: function () {
+                let url = '/api/item';
 
+                if (this.searchQuery) {
+                    let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
+                    if (is_number) {
+                        url += 's/' + this.searchQuery;
+                    } else {
+                        url += '/?name=' + this.searchQuery;
+                    }
+
+                    $.ajax({
+                        url: url,
+                        type: 'get'
+                    }).done(function (response) {
+                        if (is_number) {
+                            console.log(response);
+                        } else {
+                            console.log(response.items);
+                        }
+                    });
+                } else {
+                    return
+                }
+            }
         }
     });
-    $('#server-select').dropdown();
+
+    $('#server-select').dropdown({
+        allowTab: false,
+        forceSelection: false,
+    });
 
 </script>
 </body>
