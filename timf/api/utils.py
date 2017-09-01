@@ -1,4 +1,4 @@
-#  Utils
+#  Utilities
 
 
 def result_dictionary(cursor, data):
