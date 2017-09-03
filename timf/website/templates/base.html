@@ -22,16 +22,21 @@
 {% raw %}
 <div id="app">
     <form class="ui form" @submit.prevent="submitSearch">
-        <select id="server-select" class="ui search selection dropdown"
-                v-model="selectedServer" tabindex="2">
-            <option :value="null" selected disabled>Choose your Realm</option>
-            <option class="server.region flag" v-for="server in realmList" :key="server.id" :value="server.slug">
-                {{ server.name }} ({{ server.region }})<i class="server.region.toLowerCase() flag"></i>
-            </option>
-        </select>
+        <div id="server-select" class="ui fluid search selection dropdown" tabindex="2">
+            <input type="hidden" name="country" v-model="selectedServer">
+            <i class="dropdown icon"></i>
+            <div class="default text">Choose your Realm</div>
+            <div class="menu">
+                <div class="item" v-for="server in realmList" :data-value="server.slug" :value="server.slug">
+                    <i :class="server.region.toLowerCase()+' flag'"></i>
+                    {{ server.name }} ({{ server.region }})
+                </div>
+            </div>
+        </div>
         <input name="name" v-model="searchQuery" @keyup.enter="submitSearch" v-validate="'required'"
-               :class="{'has-error': errors.has('name')}"
+               class="ui" :class="{'red': errors.has('name')}"
                placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+        <span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>
     </form>
 </div>
 
@@ -40,26 +45,10 @@
 {% block javascript %}
 {% endblock javascript %}
 <script>
-
-{#    const store = new Vuex.Store({#}
-{#        state: {#}
-{#            count: 0,#}
-{#            message: "Hello World",#}
-{#        },#}
-{#        mutations: {#}
-{#            #}
-{#        }#}
-{#    });#}
-
     Vue.use(VeeValidate);
-
-    Vue.component('item-form', {
-        template: '#item-form',
-    });
 
     const app = new Vue({
         el: '#app',
-{#        store,#}
         components: {},
         computed: {},
         data: {
@@ -67,7 +56,8 @@
             selectedServer: null,
             searchQuery: null,
             realmList: [],
-            forms: [],
+            results: [],
+            searchHistory: [],
         },
         created: function () {
             this.getServerList();
@@ -116,6 +106,10 @@
     $('#server-select').dropdown({
         allowTab: false,
         forceSelection: false,
+        duration: 100,
+        onChange: function(text, value, $selectedItem) {
+          app.$data.selectedServer = $selectedItem.data('value');
+        }
     });
 
 </script>
