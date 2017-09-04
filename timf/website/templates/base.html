@@ -18,7 +18,6 @@
 <h2 id="title">Time is Money, Friend!</h2>
 {% block body %}
 {% endblock body %}
-
 {% raw %}
 <div id="app">
     <form class="ui form" @submit.prevent="submitSearch">
@@ -38,12 +37,25 @@
                placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
         <span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>
     </form>
+    <div class="ui middle aligned divided list">
+        <div class="item" v-for="item in results">
+            <div class="right floated content">
+                <div class="ui icon mini button"><i class="plus icon"></i></div>
+            </div>
+            <!-- <img src="" alt="" class="ui image"> -->
+            <div class="middle aligned content">
+                <a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endraw %}
-
+</body>
 {% block javascript %}
 {% endblock javascript %}
+<script type="text/javascript" src="//wow.zamimg.com/widgets/power.js"></script>
+<script>var wowhead_tooltips = { "iconizelinks": true }</script>
 <script>
     Vue.use(VeeValidate);
 
@@ -62,6 +74,9 @@
         created: function () {
             this.getServerList();
         },
+        updated: function () {
+            $WowheadPower.refreshLinks();
+        },
         methods: {
             getServerList: function () {
                 let vm = this;
@@ -77,6 +92,8 @@
             },
             submitSearch: function () {
                 let url = '/api/item';
+                let vm = this;
+                vm.results = [];
 
                 if (this.searchQuery) {
                     let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
@@ -91,16 +108,18 @@
                         type: 'get'
                     }).done(function (response) {
                         if (is_number) {
-                            console.log(response);
+                            vm.results.push(response);
                         } else {
-                            console.log(response.items);
+                            for (let i of response.items)
+                            vm.results.push(i)
                         }
                     });
                 } else {
                     return
                 }
-            }
-        }
+            },
+        },
+        watch: {}
     });
 
     $('#server-select').dropdown({
@@ -113,5 +132,4 @@
     });
 
 </script>
-</body>
 </html>

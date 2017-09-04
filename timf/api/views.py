@@ -42,7 +42,7 @@ def resolve_item_name():
     query = request.args.get('name')
 
     if query:
-        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s;'''
+        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s AND auctionable = true;'''
         cursor = mysql.connection.cursor()
         cursor.execute(sql, ["%" + query + "%", ])
         data = cursor.fetchall()
