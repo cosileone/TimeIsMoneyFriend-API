@@ -4,4 +4,4 @@ from . import site
 
 @site.route('/')
 def homepage():
-    return render_template('base.html')
+    return render_template('index.html')
