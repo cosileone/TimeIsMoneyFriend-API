@@ -2,16 +2,13 @@ from __future__ import division
 import wowapi
 import urllib
 import json
-import ConfigParser
 import time
 import os
 
-from run import mysql
+from run import app
 
-config = ConfigParser.ConfigParser()
-config.read('../instance/config.ini')
-BLIZZ_KEY = config.get('DEFAULT', 'blizz_key')
-DEFAULT_SERVER = config.get('DEFAULT', 'server')
+BLIZZ_KEY = app.config['BLIZZ_KEY']
+DEFAULT_SERVER = app.config['DEFAULT_REALM']
 blizzapi = wowapi.API(BLIZZ_KEY)
 
 
@@ -44,25 +41,6 @@ class AuctionHouse(object):
         with open(filename, 'w') as outfile:
             json.dump(json_data, outfile, sort_keys=True, indent=4)
 
-    def get_item_name(self, item_id):
-        item_name = blizzapi.item(item_id)['name']
-        return item_name
-
-    def get_item_id(self, item_name):
-        sql = '''SELECT * FROM `tblDBCItem` WHERE name_enus = %s;'''
-        result = -1
-        cursor = mysql.connection.cursor()
-        cursor.execute(sql, [item_name])
-
-        db_row = cursor.fetchone()  # fetch one result of SQL query (should only return 1 row anyway)
-
-        if db_row:
-            result = db_row[0]  # first column of db is item id
-        else:
-            print("\t'%s' not found in item DB. Perhaps not an exact name match?" % item_name)
-
-        return result
-
     def filter_by_item_id(self, item_id):
         results = []
         for auction in self.data['auctions']:
@@ -72,18 +50,32 @@ class AuctionHouse(object):
         return results
 
     def calcStat(self, item_id, preferred_stat='min'):
+        total_quantity = 0
+        total_volume = 0
+        mean_buyout = 0
+
         filtered_ah = self.filter_by_item_id(item_id)
-        prices_only = [auction['buyout'] for auction in filtered_ah]
-        num_listings = len(prices_only)
-        market_volume = sum(prices_only)
+        num_listings = len(filtered_ah)
+
         if num_listings > 0:
-            mean_buyout = market_volume/num_listings/10000
-            min_buyout = min(prices_only)/10000
-        else:
-            mean_buyout = 0
-            min_buyout = 0
+            min_buyout = filtered_ah[0]['buyout']
 
-        results = {'count': num_listings, 'mean': mean_buyout, 'min': min_buyout}
+            for auction in filtered_ah:
+                buyout = auction['buyout']
+                quantity = auction['quantity']
+                total_quantity += quantity
+                total_volume += buyout
+                min_buyout = min(min_buyout, (buyout/quantity))
 
-        return results[preferred_stat]
+            mean_buyout = total_volume / total_quantity
+
+        results = {
+            'auctions': num_listings,
+            'total_quantity': total_quantity,
+            'total_volume': total_volume/10000,
+            'mean': mean_buyout/10000,
+            'cheapest': min_buyout/10000
+        }
+
+        return results
 

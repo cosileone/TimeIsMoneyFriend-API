@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_mysqldb import MySQL
 
-app = Flask(__name__, static_folder='timf/website/static')
+import os
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(__name__, static_folder='timf/website/static', instance_path=BASE_DIR+'/instance/', instance_relative_config=True)
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 mysql = MySQL(app)

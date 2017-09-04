@@ -1,6 +1,7 @@
 from flask import jsonify, request
 
 from . import api
+from ..auctions.AuctionHouse import AuctionHouse
 from run import mysql
 from utils import result_dictionary
 
@@ -23,6 +24,8 @@ def list_items():
 
 @api.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
+    query = request.args.get('realm')
+
     sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = %s AND auctionable = true;'''
     cursor = mysql.connection.cursor()
     cursor.execute(sql, [item_id])
@@ -32,6 +35,10 @@ def get_item(item_id):
         item = result_dictionary(cursor, data)
     else:
         return jsonify({"error": "item not found"}), 404
+
+    if query:
+        ah = AuctionHouse(server=query)
+        item['auction_data'] = ah.calcStat(item_id)
 
     return jsonify(item)
 
