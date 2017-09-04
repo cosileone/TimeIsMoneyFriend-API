@@ -19,9 +19,9 @@
 {% block body %}
 {% endblock body %}
 {% raw %}
-<div id="app">
-    <form class="ui form" @submit.prevent="submitSearch">
-        <div id="server-select" class="ui fluid search selection dropdown" tabindex="2">
+<div id="app" class="ui one column grid">
+    <form class="ui form" @submit.prevent="submitSearch" autocomplete="off">
+        <div id="server-select" class="ui search selection dropdown" tabindex="2">
             <input type="hidden" name="country" v-model="selectedServer">
             <i class="dropdown icon"></i>
             <div class="default text">Choose your Realm</div>
@@ -32,22 +32,28 @@
                 </div>
             </div>
         </div>
-        <input name="name" v-model="searchQuery" @keyup.enter="submitSearch" v-validate="'required'"
-               class="ui" :class="{'red': errors.has('name')}"
-               placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
-        <span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>
-    </form>
-    <div class="ui middle aligned divided list">
-        <div class="item" v-for="item in results">
-            <div class="right floated content">
-                <div class="ui icon mini button"><i class="plus icon"></i></div>
-            </div>
-            <!-- <img src="" alt="" class="ui image"> -->
-            <div class="middle aligned content">
-                <a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a>
-            </div>
+        <div class="ui action input">
+            <input name="name" v-model="searchQuery" v-validate="'required'"
+                   :class="{'red': errors.has('name')}"
+                   placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+            <button id="submitButton" class="ui icon primary button">
+                <i class="search icon"></i>
+            </button>
         </div>
-    </div>
+        <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
+    </form>
+    <table v-show="results.length" class="ui very compact table">
+        <tbody>
+            <tr class="item" v-for="item in results">
+                <td>
+                    <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
+                </td>
+                <td class="right aligned">
+                    <div class="mini ui icon button"><i class="plus icon"></i></div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 
 {% endraw %}
@@ -75,7 +81,9 @@
             this.getServerList();
         },
         updated: function () {
-            $WowheadPower.refreshLinks();
+            if (this.results.length) {
+                $WowheadPower.refreshLinks();
+            }
         },
         methods: {
             getServerList: function () {
@@ -96,6 +104,8 @@
                 vm.results = [];
 
                 if (this.searchQuery) {
+                    $('#submitButton').addClass('loading');
+
                     let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
                     if (is_number) {
                         url += 's/' + this.searchQuery;
@@ -113,13 +123,14 @@
                             for (let i of response.items)
                             vm.results.push(i)
                         }
+                    }).always(function(){
+                        $('#submitButton').removeClass('loading');
                     });
                 } else {
                     return
                 }
             },
         },
-        watch: {}
     });
 
     $('#server-select').dropdown({
