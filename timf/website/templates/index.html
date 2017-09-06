@@ -15,11 +15,11 @@
                     <div class="two fields" style="justify-content: center">
                         <div class="three wide field">
                             <div id="server-select" class="ui search selection dropdown" tabindex="2">
-                                <input type="hidden" name="country" v-model="selectedServer">
+                                <input type="hidden" name="country" v-model="selectedRealm">
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Choose your Realm</div>
                                 <div class="menu">
-                                    <div class="item" v-for="server in realmList" :data-value="server.slug" :value="server.slug">
+                                    <div class="item" v-for="server in realmList" :data-value="server.slug" :data-region="server.region" :value="server">
                                         <i :class="server.region.toLowerCase()+' flag'"></i>
                                         {{ server.name }} ({{ server.region }})
                                     </div>
@@ -48,8 +48,10 @@
                         <td>
                             <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
                         </td>
-                        <td class="right aligned">
-                            <div class="mini ui teal icon button"><i class="plus icon"></i></div>
+                        <td v-show="selectedRealm" class="right aligned">
+                            <a v-if="!item.auction_data" :id="'item-'+item.id" class="mini ui teal icon button" @click="auctionData(item)"><i class="plus icon"></i></a>
+                            <a v-else-if="item.auction_data.cheapest_buyout">{{ item.auction_data.cheapest_buyout }}g</a>
+                            <a v-else>{{ item.auction_data.cheapest_bid }}g</a>
                         </td>
                     </tr>
                 </tbody>
@@ -70,7 +72,8 @@
         computed: {},
         data: {
             itemId: null,
-            selectedServer: null,
+            selectedRealm: null,
+            selectedRegion: null,
             searchQuery: null,
             realmList: [],
             results: [],
@@ -96,6 +99,14 @@
                         vm.realmList.push(list[i]);
                     }
                 });
+            },
+            findByAttr: function (array, attr, value) {
+                for (var i = 0; i < array.length; i += 1) {
+                    if (array[i][attr] === value) {
+                        return array[i];
+                    }
+                }
+                return null;
             },
             submitSearch: function () {
                 let url = '/api/item';
@@ -129,6 +140,23 @@
                     return
                 }
             },
+            auctionData: function (item) {
+                if (this.selectedRealm && this.selectedRegion) {
+                    $('#item-'+item.id).addClass('loading');
+                    let url = '/api/items/'+item.id+'?realm='+this.selectedRealm+'&region='+this.selectedRegion;
+
+                    $.ajax({
+                        url: url,
+                        type: 'get'
+                    }).done(function (response) {
+                        Vue.set(item, 'auction_data', response.auction_data);
+                    }).fail(function (xhr, status, message) {
+                        console.log(message);
+                    }).always(function () {
+                        $('#item-'+item.id).removeClass('loading');
+                    });
+                }
+            },
         },
     });
 
@@ -137,7 +165,8 @@
         forceSelection: false,
         duration: 100,
         onChange: function(text, value, $selectedItem) {
-          app.$data.selectedServer = $selectedItem.data('value');
+            app.$data.selectedRealm = $selectedItem.data('value');
+            app.$data.selectedRegion = $selectedItem.data('region');
         }
     });
 
