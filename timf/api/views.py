@@ -49,7 +49,8 @@ def resolve_item_name():
     query = request.args.get('name')
 
     if query:
-        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s;'''
+        # TODO: Paginate instead of LIMIT - http://flask.pocoo.org/snippets/44/
+        sql = '''SELECT id, name_enus FROM `tblDBCItem` WHERE name_enus LIKE %s AND auctionable = true LIMIT 25;'''
         cursor = mysql.connection.cursor()
         cursor.execute(sql, ["%" + query + "%", ])
         data = cursor.fetchall()

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Time is Money, Friend! - Welcome{% endblock title %}
+
+{% block body %}
+{% raw %}
+<div id="app" class="ui fluid center aligned container">
+    <h2 id="title" style="text-align: center;">Time is Money, Friend!</h2>
+
+    <div class="ui stackable center aligned grid">
+        <div class="row">
+            <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
+                <div class="field">
+                    <label></label>
+                    <div class="two fields" style="justify-content: center">
+                        <div class="three wide field">
+                            <div id="server-select" class="ui search selection dropdown" tabindex="2">
+                                <input type="hidden" name="country" v-model="selectedServer">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Choose your Realm</div>
+                                <div class="menu">
+                                    <div class="item" v-for="server in realmList" :data-value="server.slug" :value="server.slug">
+                                        <i :class="server.region.toLowerCase()+' flag'"></i>
+                                        {{ server.name }} ({{ server.region }})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="eight wide field">
+                            <div class="ui action input">
+                                <input name="name" v-model="searchQuery" v-validate="'required'"
+                                       :class="{'red': errors.has('name')}"
+                                       placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+                                <button id="submitButton" class="ui icon primary button">
+                                    <i class="search icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
+            </form>
+        </div>
+        <div class="row eleven wide column">
+            <table v-show="results.length" class="ui very compact table">
+                <tbody>
+                    <tr class="item" v-for="item in results">
+                        <td>
+                            <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
+                        </td>
+                        <td class="right aligned">
+                            <div class="mini ui teal icon button"><i class="plus icon"></i></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endraw %}
+{% endblock body %}
+
+{% block javascript %}
+<script>
+    Vue.use(VeeValidate);
+
+    const app = new Vue({
+        el: '#app',
+        components: {},
+        computed: {},
+        data: {
+            itemId: null,
+            selectedServer: null,
+            searchQuery: null,
+            realmList: [],
+            results: [],
+            searchHistory: [],
+        },
+        created: function () {
+            this.getServerList();
+        },
+        updated: function () {
+            if (this.results.length) {
+                $WowheadPower.refreshLinks();
+            }
+        },
+        methods: {
+            getServerList: function () {
+                let vm = this;
+                $.ajax({
+                    url: '/api/realms',
+                    type: 'get'
+                }).always(function (response) {
+                    const list = response['realms'];
+                    for (let i = 0; i < list.length; i++) {
+                        vm.realmList.push(list[i]);
+                    }
+                });
+            },
+            submitSearch: function () {
+                let url = '/api/item';
+                let vm = this;
+                vm.results = [];
+
+                if (this.searchQuery) {
+                    $('#submitButton').addClass('loading');
+
+                    let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
+                    if (is_number) {
+                        url += 's/' + this.searchQuery;
+                    } else {
+                        url += '/?name=' + this.searchQuery;
+                    }
+
+                    $.ajax({
+                        url: url,
+                        type: 'get'
+                    }).done(function (response) {
+                        if (is_number) {
+                            vm.results.push(response);
+                        } else {
+                            for (let i of response.items)
+                            vm.results.push(i)
+                        }
+                    }).always(function(){
+                        $('#submitButton').removeClass('loading');
+                    });
+                } else {
+                    return
+                }
+            },
+        },
+    });
+
+    $('#server-select').dropdown({
+        allowTab: false,
+        forceSelection: false,
+        duration: 100,
+        onChange: function(text, value, $selectedItem) {
+          app.$data.selectedServer = $selectedItem.data('value');
+        }
+    });
+
+</script>
+{% endblock javascript %}
