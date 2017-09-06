@@ -30,10 +30,13 @@ class AuctionHouse(object):
 
         return auction_data
 
+    def read_json_from_disk(self):
+        pass
+
     def save_json_to_disk(self, json_data):
         timestr = time.strftime("%Y.%m.%d-%H%M%S")
-        dirname = "./Auction Data/%s/" % self.server
-        filename = dirname + ("%s.json" % timestr)
+        dirname = "./Auction Data/{}/".format(self.server)
+        filename = dirname + ("{}.json".format(timestr))
 
         if not os.path.exists(dirname):
             os.makedirs(dirname)
