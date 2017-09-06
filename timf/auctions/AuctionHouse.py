@@ -41,31 +41,38 @@ class AuctionHouse(object):
         with open(filename, 'w') as outfile:
             json.dump(json_data, outfile, sort_keys=True, indent=4)
 
-    def filter_by_item_id(self, item_id):
+    def filter_by_item_ids(self, item_ids):
         results = []
         for auction in self.data['auctions']:
-            if item_id == auction['item'] and auction['buyout']:
+            if auction['item'] in item_ids and auction['buyout']:
                 results.append(auction)
 
         return results
 
-    def calcStat(self, item_id, preferred_stat='min'):
+    def calcStats(self, item_ids):
         total_quantity = 0
         total_volume = 0
         mean_buyout = 0
+        min_buyout = 0
 
-        filtered_ah = self.filter_by_item_id(item_id)
+        filtered_ah = self.filter_by_item_ids(item_ids)
         num_listings = len(filtered_ah)
 
         if num_listings > 0:
-            min_buyout = filtered_ah[0]['buyout']
+            min_bid = filtered_ah[0]['bid']
 
             for auction in filtered_ah:
-                buyout = auction['buyout']
+                bid = auction['bid']
                 quantity = auction['quantity']
+                buyout = auction['buyout']
+                if min_buyout == 0 and not buyout == 0:
+                    min_buyout = buyout
+
+                min_buyout = min(min_buyout, (buyout / quantity))
+                min_bid = min(min_bid, (bid / quantity))
+
                 total_quantity += quantity
                 total_volume += buyout
-                min_buyout = min(min_buyout, (buyout/quantity))
 
             mean_buyout = total_volume / total_quantity
 
@@ -73,8 +80,9 @@ class AuctionHouse(object):
             'auctions': num_listings,
             'total_quantity': total_quantity,
             'total_volume': total_volume/10000,
-            'mean': mean_buyout/10000,
-            'cheapest': min_buyout/10000
+            'mean_buyout': mean_buyout/10000,
+            'cheapest_buyout': min_buyout/10000,
+            'cheapest_bid': min_bid/10000
         }
 
         return results

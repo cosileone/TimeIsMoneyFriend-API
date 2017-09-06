@@ -26,7 +26,7 @@ def list_items():
 def get_item(item_id):
     query = request.args.get('realm')
 
-    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id = %s AND auctionable = true;'''
+    sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id IN (%s) AND auctionable = true;'''
     cursor = mysql.connection.cursor()
     cursor.execute(sql, [item_id])
     data = cursor.fetchone()
@@ -38,7 +38,7 @@ def get_item(item_id):
 
     if query:
         ah = AuctionHouse(server=query)
-        item['auction_data'] = ah.calcStat(item_id)
+        item['auction_data'] = ah.calcStats([item_id])
 
     return jsonify(item)
 
