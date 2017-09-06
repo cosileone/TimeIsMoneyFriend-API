@@ -24,7 +24,8 @@ def list_items():
 
 @api.route('/items/<int:item_id>', methods=['GET'])
 def get_item(item_id):
-    query = request.args.get('realm')
+    region = request.args.get('region')
+    realm = request.args.get('realm')
 
     sql = '''SELECT id, name_enus FROM tblDBCItem WHERE id IN (%s) AND auctionable = true;'''
     cursor = mysql.connection.cursor()
@@ -36,8 +37,11 @@ def get_item(item_id):
     else:
         return jsonify({"error": "item not found"}), 404
 
-    if query:
-        ah = AuctionHouse(server=query)
+    if realm:
+        if region:
+            ah = AuctionHouse(region=region, server=realm)
+        else:
+            ah = AuctionHouse(server=realm)
         item['auction_data'] = ah.calcStats([item_id])
 
     return jsonify(item)

@@ -13,7 +13,8 @@ blizzapi = wowapi.API(BLIZZ_KEY)
 
 
 class AuctionHouse(object):
-    def __init__(self, server=DEFAULT_SERVER, download_data=False):
+    def __init__(self, region='US', server=DEFAULT_SERVER, download_data=False):
+        blizzapi.region = region
         self.server = server
         self.data = self.get_whole_ah(download_data)
 
@@ -47,7 +48,7 @@ class AuctionHouse(object):
     def filter_by_item_ids(self, item_ids):
         results = []
         for auction in self.data['auctions']:
-            if auction['item'] in item_ids and auction['buyout']:
+            if auction['item'] in item_ids:
                 results.append(auction)
 
         return results
@@ -78,6 +79,8 @@ class AuctionHouse(object):
                 total_volume += buyout
 
             mean_buyout = total_volume / total_quantity
+        else:
+            min_bid = 0
 
         results = {
             'auctions': num_listings,
