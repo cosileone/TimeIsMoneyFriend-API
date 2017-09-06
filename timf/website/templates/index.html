@@ -7,34 +7,41 @@
 <div id="app" class="ui fluid center aligned container">
     <h2 id="title" style="text-align: center;">Time is Money, Friend!</h2>
 
-    <div class="ui grid">
+    <div class="ui stackable center aligned grid">
         <div class="row">
             <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
-                <div class="inline fields">
-                    <div id="server-select" class="ui search selection dropdown four wide field" tabindex="2">
-                        <input type="hidden" name="country" v-model="selectedServer">
-                        <i class="dropdown icon"></i>
-                        <div class="default text">Choose your Realm</div>
-                        <div class="menu">
-                            <div class="item" v-for="server in realmList" :data-value="server.slug" :value="server.slug">
-                                <i :class="server.region.toLowerCase()+' flag'"></i>
-                                {{ server.name }} ({{ server.region }})
+                <div class="field">
+                    <label></label>
+                    <div class="two fields" style="justify-content: center">
+                        <div class="three wide field">
+                            <div id="server-select" class="ui search selection dropdown" tabindex="2">
+                                <input type="hidden" name="country" v-model="selectedServer">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Choose your Realm</div>
+                                <div class="menu">
+                                    <div class="item" v-for="server in realmList" :data-value="server.slug" :value="server.slug">
+                                        <i :class="server.region.toLowerCase()+' flag'"></i>
+                                        {{ server.name }} ({{ server.region }})
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="ui action input eight wide field">
-                        <input name="name" v-model="searchQuery" v-validate="'required'"
-                               :class="{'red': errors.has('name')}"
-                               placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
-                        <button id="submitButton" class="ui icon primary button">
-                            <i class="search icon"></i>
-                        </button>
+                        <div class="eight wide field">
+                            <div class="ui action input">
+                                <input name="name" v-model="searchQuery" v-validate="'required'"
+                                       :class="{'red': errors.has('name')}"
+                                       placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+                                <button id="submitButton" class="ui icon primary button">
+                                    <i class="search icon"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
             </form>
         </div>
-        <div class="row">
+        <div class="row eleven wide column">
             <table v-show="results.length" class="ui very compact table">
                 <tbody>
                     <tr class="item" v-for="item in results">
@@ -42,7 +49,7 @@
                             <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
                         </td>
                         <td class="right aligned">
-                            <div class="mini ui icon button"><i class="plus icon"></i></div>
+                            <div class="mini ui teal icon button"><i class="plus icon"></i></div>
                         </td>
                     </tr>
                 </tbody>
