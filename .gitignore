@@ -98,3 +98,5 @@ ENV/
 
 .idea/
 config.ini
+timf/auctions/data/
+timf/auctions/data/*
