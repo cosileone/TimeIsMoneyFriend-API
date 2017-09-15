@@ -39,7 +39,7 @@ def get_item(item_id):
 
     if realm:
         if region:
-            ah = AuctionHouse(region=region, server=realm)
+            ah = AuctionHouse(region=region, server=realm, download_data=True)
         else:
             ah = AuctionHouse(server=realm)
         item['auction_data'] = ah.calcStats([item_id])
