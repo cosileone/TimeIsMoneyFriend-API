@@ -8,6 +8,7 @@ MYSQL_DB = 'newsstand'
 DEFAULT_REALM = 'malganis'
 
 SQLALCHEMY_DATABASE_URI = 'postgres://localhost/timf'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SQLALCHEMY_BINDS = {
     'newsstand': 'mysqldb://newswire.theunderminejournal.com/newsstand',
