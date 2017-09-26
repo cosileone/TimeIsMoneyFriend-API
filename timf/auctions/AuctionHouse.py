@@ -43,6 +43,7 @@ class AuctionHouse(object):
         return auction_data
 
     def is_fresh_data(self, filepath, threshold):
+        # TODO: check Blizz AH URL instead of filename for freshness
         now = datetime.now()
 
         dirname = "./timf/auctions/data/{0}-{1}/".format(self.server, self.region)

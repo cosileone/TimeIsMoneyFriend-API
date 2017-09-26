@@ -4,58 +4,68 @@
 
 {% block body %}
 {% raw %}
-<div id="app" class="ui fluid center aligned container">
+<div id="app" class="ui fluid container">
     <h2 id="title" style="text-align: center;">Time is Money, Friend!</h2>
 
-    <div class="ui stackable center aligned grid">
+    <div class="ui stackable centered grid">
         <div class="row">
-            <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
-                <div class="field">
-                    <label></label>
-                    <div class="two fields" style="justify-content: center">
-                        <div class="three wide field">
-                            <div id="server-select" class="ui search selection dropdown" tabindex="2">
-                                <input type="hidden" name="country" v-model="selectedRealm">
-                                <i class="dropdown icon"></i>
-                                <div class="default text">Choose your Realm</div>
-                                <div class="menu">
-                                    <div class="item" v-for="server in realmList" :data-value="server.slug" :data-region="server.region" :value="server">
-                                        <i :class="server.region.toLowerCase()+' flag'"></i>
-                                        {{ server.name }} ({{ server.region }})
+            <div class="eleven wide column">
+                <!-- Search Box -->
+                <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
+                    <div class="field">
+                        <label></label>
+                        <div class="two fields" style="justify-content: center">
+                            <div class="six wide field">
+                                <div id="server-select" class="ui search selection dropdown" tabindex="2">
+                                    <input type="hidden" name="country" v-model="selectedRealm">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Choose your Realm</div>
+                                    <div class="menu">
+                                        <div class="item" v-for="server in realmList" :data-value="server.slug" :data-region="server.region" :value="server">
+                                            <i :class="server.region.toLowerCase()+' flag'"></i>
+                                            {{ server.name }} ({{ server.region }})
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="eight wide field">
-                            <div class="ui action input">
-                                <input name="name" v-model="searchQuery" v-validate="'required'"
-                                       :class="{'red': errors.has('name')}"
-                                       placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
-                                <button id="submitButton" class="ui icon primary button">
-                                    <i class="search icon"></i>
-                                </button>
+                            <div class="ten wide field">
+                                <div class="ui action input">
+                                    <input name="name" v-model="searchQuery" v-validate="'required'"
+                                           :class="{'red': errors.has('name')}"
+                                           placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+                                    <button id="submitButton" class="ui icon primary button">
+                                        <i class="search icon"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
-            </form>
+                    <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
+                </form>
+            </div>
         </div>
-        <div class="row eleven wide column">
-            <table v-show="results.length" class="ui very compact unstackable table">
-                <tbody>
-                    <tr class="item" v-for="item in results">
-                        <td>
-                            <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
-                        </td>
-                        <td v-show="selectedRealm" class="right aligned">
-                            <a v-if="!item.auction_data" :id="'item-'+item.id" class="mini ui teal icon button" @click="auctionData(item)"><i class="plus icon"></i></a>
-                            <a v-else-if="item.auction_data.cheapest_buyout">{{ item.auction_data.cheapest_buyout }}g</a>
-                            <a v-else>{{ item.auction_data.cheapest_bid }}g</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="row">
+            <div class="three wide column"></div>
+            <div class="ten wide column">
+                <table v-show="results.length" class="ui very compact unstackable table">
+                    <tbody>
+                        <tr class="item" v-for="item in results">
+                            <td>
+                                <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
+                            </td>
+                            <td v-show="selectedRealm" class="right aligned">
+                                <a v-if="!item.auction_data" :id="'item-'+item.id" class="mini ui teal icon button" @click="auctionData(item)"><i class="plus icon"></i></a>
+                                <a v-else-if="item.auction_data.cheapest_buyout">{{ item.auction_data.cheapest_buyout }}g</a>
+                                <a v-else>{{ item.auction_data.cheapest_bid }}g</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="shopping-list" class="three wide column">
+                <div style="background-color: #000000; color: #FFFFFF">Shopping List</div>
+                <div v-for="item in shoppingCart"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -71,13 +81,13 @@
         components: {},
         computed: {},
         data: {
-            itemId: null,
             selectedRealm: null,
             selectedRegion: null,
             searchQuery: null,
             realmList: [],
             results: [],
             searchHistory: [],
+            shoppingCart: {},
         },
         created: function () {
             this.getServerList();
@@ -168,6 +178,10 @@
             app.selectedRealm = $selectedItem.data('value');
             app.selectedRegion = $selectedItem.data('region');
         }
+    });
+
+    Sortable.create(shopping-list, {
+        animation: 150
     });
 
 </script>
