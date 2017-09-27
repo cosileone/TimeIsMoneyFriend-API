@@ -9,11 +9,13 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
 
     <script type="text/javascript" src="https://unpkg.com/jquery"></script>
+    <script type="text/javascript" src="https://unpkg.com/underscore"></script>
     <script type="text/javascript" src="https://unpkg.com/vue"></script>
     <script type="text/javascript" src="https://unpkg.com/vuex"></script>
     <script type="text/javascript" src="https://unpkg.com/vee-validate"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='vendor/semantic-ui/semantic.min.js') }}"></script>
-    <script src="//cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+{#    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>#}
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
 </head>
 
 <body>
@@ -22,7 +24,7 @@
 </body>
 
 <script type="text/javascript" src="//wow.zamimg.com/widgets/power.js"></script>
-<script>var wowhead_tooltips = { "iconizelinks": true }</script>
+<script>var wowhead_tooltips = { "iconizelinks": true };</script>
 
 {% block javascript %}
 {% endblock javascript %}

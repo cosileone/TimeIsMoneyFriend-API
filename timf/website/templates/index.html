@@ -8,7 +8,7 @@
     <h2 id="title" style="text-align: center;">Time is Money, Friend!</h2>
 
     <div class="ui stackable centered grid">
-        <div class="row">
+        <div class="unstackable row">
             <div class="eleven wide column">
                 <!-- Search Box -->
                 <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
@@ -45,26 +45,49 @@
             </div>
         </div>
         <div class="row">
-            <div class="three wide column"></div>
-            <div class="ten wide column">
-                <table v-show="results.length" class="ui very compact unstackable table">
+            <div class="four wide column"></div>
+            <div class="eight wide column">
+                <table v-show="results.length" id="results" class="ui very compact unstackable table">
                     <tbody>
                         <tr class="item" v-for="item in results">
                             <td>
                                 <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
                             </td>
-                            <td v-show="selectedRealm" class="right aligned">
-                                <a v-if="!item.auction_data" :id="'item-'+item.id" class="mini ui teal icon button" @click="auctionData(item)"><i class="plus icon"></i></a>
-                                <a v-else-if="item.auction_data.cheapest_buyout">{{ item.auction_data.cheapest_buyout }}g</a>
-                                <a v-else>{{ item.auction_data.cheapest_bid }}g</a>
+                            <td class="right aligned">
+                                <div v-show="!inCart(item)">
+                                    <a v-if="!item.auction_data" :id="'item-'+item.id" class="ui mini teal icon button"
+                                       @click="addToCart(item)">
+                                        <i class="plus icon"></i>
+                                    </a>
+                                    <span v-else-if="item.auction_data.cheapest_buyout">{{ item.auction_data.cheapest_buyout }}g</span>
+                                    <span v-else>{{ item.auction_data.cheapest_bid }}g</span>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div id="shopping-list" class="three wide column">
-                <div style="background-color: #000000; color: #FFFFFF">Shopping List</div>
-                <div v-for="item in shoppingCart"></div>
+            <div class="four wide column">
+                <table v-show="shoppingCart.length" class="ui very compact table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <span class="">Shopping List</span>
+                                <a class="ui mini blue icon button right floated">
+                                    <i class="dollar icon"></i>
+                                    Fetch Prices
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in shoppingCart">
+                            <td>
+                                <a :href="'http://www.wowhead.com/item='+item.id" :id="'item-'+item.id">{{ item.name_enus }}</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -87,14 +110,14 @@
             realmList: [],
             results: [],
             searchHistory: [],
-            shoppingCart: {},
+            shoppingCart: [],
         },
         created: function () {
             this.getServerList();
         },
         updated: function () {
             if (this.results.length) {
-                $WowheadPower.refreshLinks();
+                this.refreshIcons();
             }
         },
         methods: {
@@ -167,6 +190,20 @@
                     });
                 }
             },
+            inCart: function(item) {
+                for (let i = 0; i < this.shoppingCart.length; i++) {
+                    if (this.shoppingCart[i] === item) {
+                        return true
+                    }
+                }
+                return false
+            },
+            addToCart: function(item) {
+                this.shoppingCart.push(item);
+            },
+            refreshIcons: _.debounce(function(){
+                $WowheadPower.refreshLinks();
+            }, 100),
         },
     });
 
@@ -180,9 +217,10 @@
         }
     });
 
-    Sortable.create(shopping-list, {
-        animation: 150
-    });
+{#    http://rubaxa.github.io/Sortable/ #}
+{#    Sortable.create(shoppingList, {#}
+{#        animation: 150#}
+{#    });#}
 
 </script>
 {% endblock javascript %}
