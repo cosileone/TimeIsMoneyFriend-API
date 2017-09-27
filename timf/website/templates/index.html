@@ -4,11 +4,11 @@
 
 {% block body %}
 {% raw %}
-<div id="app" class="ui fluid container">
+<div id="app" class="ui fluid centered container">
     <h2 id="title" style="text-align: center;">Time is Money, Friend!</h2>
 
     <div class="ui stackable centered grid">
-        <div class="unstackable row">
+        <div class="row">
             <div class="eleven wide column">
                 <!-- Search Box -->
                 <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="four wide column"></div>
+            <div class="four wide column mobile hidden"></div>
             <div class="eight wide column">
                 <table v-show="results.length" id="results" class="ui very compact unstackable table">
                     <tbody>
@@ -54,7 +54,7 @@
                                 <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
                             </td>
                             <td class="right aligned">
-                                <div v-show="!inCart(item)">
+                                <div>
                                     <a v-if="!item.auction_data" :id="'item-'+item.id" class="ui mini teal icon button"
                                        @click="addToCart(item)">
                                         <i class="plus icon"></i>
@@ -68,12 +68,14 @@
                 </table>
             </div>
             <div class="four wide column">
-                <table v-show="shoppingCart.length" class="ui very compact table">
+                <table v-show="shoppingCart.length" class="ui very compact unstackable table">
                     <thead>
                         <tr>
                             <th>
-                                <span class="">Shopping List</span>
-                                <a class="ui mini blue icon button right floated">
+                                <span>Shopping List</span>
+                            </th>
+                            <th class="right aligned">
+                                <a v-show="selectedRealm" class="ui mini blue icon label" @click="shopAll()">
                                     <i class="dollar icon"></i>
                                     Fetch Prices
                                 </a>
@@ -82,7 +84,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="item in shoppingCart">
-                            <td>
+                            <td colspan="2">
                                 <a :href="'http://www.wowhead.com/item='+item.id" :id="'item-'+item.id">{{ item.name_enus }}</a>
                             </td>
                         </tr>
@@ -199,11 +201,16 @@
                 return false
             },
             addToCart: function(item) {
-                this.shoppingCart.push(item);
+                if (!this.inCart(item)) {
+                    this.shoppingCart.push(item);
+                }
             },
             refreshIcons: _.debounce(function(){
                 $WowheadPower.refreshLinks();
             }, 100),
+            shopAll: function() {
+                this.shoppingCart.map(this.auctionData);
+            }
         },
     });
 

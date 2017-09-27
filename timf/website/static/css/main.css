@@ -2,3 +2,7 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: #008000;
 }
+
+tr.item > td {
+    height: 39px;
+}
