@@ -9,7 +9,7 @@
 }
 
 /* ---- Begin Styles ---- */
-[v-cloak] {display: none}
+[v-cloak] > * { display:none }
 
 body {
     background-color: #EFEFEF;
@@ -30,6 +30,16 @@ tr.item > td {
     height: 39px;
 }
 
+.no-padding {
+    padding: 0 !important;
+}
+
+#fetch-prices {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding: 7px 0;
+    width: 100%;
+}
 
 /* ---- Mobile Media Queries ---- */
 @media only screen and (min-device-width: 320px) and (max-device-width: 768px) and (orientation : portrait) {
