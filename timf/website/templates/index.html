@@ -4,11 +4,11 @@
 
 {% block body %}
 {% raw %}
-<div id="app" class="ui fluid centered container">
+<div id="app" class="ui fluid centered container" v-cloak>
     <h1 id="title" style="text-align: center;">Time is Money, Friend!</h1>
 
     <div class="ui stackable centered grid">
-        <div class="row">
+        <div id="search" class="row">
             <div class="eleven wide column">
                 <!-- Search Box -->
                 <form class="ui form" @submit.prevent="submitSearch" autocomplete="off" style="width: 100%;">
@@ -45,7 +45,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="four wide column tablet only"></div>
+            <div class="tablet only four wide column"></div>
             <div class="eight wide column">
                 <table v-show="results.length" id="results" class="ui very compact unstackable table">
                     <tbody>
@@ -75,7 +75,7 @@
                                 <span>Shopping List</span>
                             </th>
                             <th class="right aligned">
-                                <a v-show="selectedRealm" class="ui mini blue icon label" @click="shopAll()">
+                                <a v-show="selectedRealm" class="ui small blue icon label" @click="shopAll()">
                                     <i class="dollar icon"></i>
                                     Fetch Prices
                                 </a>
