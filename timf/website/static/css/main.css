@@ -30,6 +30,18 @@ tr.item > td {
     height: 39px;
 }
 
+tr.shopping-row:hover .trash.icon {
+    visibility: visible;
+}
+
+tr.shopping-row:hover .inline.loader {
+    visibility: hidden;
+}
+
+.trash.icon {
+    visibility: hidden;
+}
+
 .no-padding {
     padding: 0 !important;
 }
