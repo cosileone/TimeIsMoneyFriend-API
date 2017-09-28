@@ -1,8 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Dosis');
+
+body {
+    background-color: #EFEFEF;
+}
+
 #title {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     color: #008000;
+    font-family: "Dosis", "Helvetica Neue", Arial, sans-serif;
+    font-size: 72px;
 }
 
 tr.item > td {
     height: 39px;
+}
+
+
+/* ---- Mobile Media Queries ---- */
+@media only screen and (min-device-width: 320px) and (max-device-width: 768px) and (orientation : portrait) {
+/* Styles */
+    #title {
+        font-size: 41px;
+    }
 }
