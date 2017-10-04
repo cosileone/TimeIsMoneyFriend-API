@@ -6,6 +6,22 @@ from run import mysql
 from utils import result_dictionary
 
 
+@api.route('/realms', methods=['GET'])
+def list_servers():
+    sql = '''SELECT id, name, region, slug, population, house from tblRealm where region in ('US', 'EU');'''
+    cursor = mysql.connection.cursor()
+    cursor.execute(sql)
+    data = cursor.fetchall()
+
+    results = []
+    for row in data:
+        item = result_dictionary(cursor, row)
+
+        results.append(item)
+
+    return jsonify({"realms": results})
+
+
 @api.route('/items', methods=['GET'])
 def list_items():
     sql = '''SELECT id, name_enus from tblDBCItem where auctionable = true;'''
@@ -73,17 +89,33 @@ def resolve_item_name():
     return jsonify({"items": results})
 
 
-@api.route('/realms', methods=['GET'])
-def list_servers():
-    sql = '''SELECT id, name, region, slug, population, house from tblRealm where region in ('US', 'EU');'''
+@api.route('/recipe/<string:item_name>', methods=['GET'])
+def get_recipes(item_name):
+    region = request.args.get('region')
+    realm = request.args.get('realm')
+
+    sql = '''SELECT tblDBCSpell.*, tblDBCItem.name_enus AS product
+             FROM `tblDBCSpell`
+             LEFT JOIN `tblDBCItem` ON `tblDBCItem`.`id` = `tblDBCSpell`.crafteditem
+             WHERE `name` LIKE %s
+             OR `product` LIKE %s
+             AND skillline IS NOT NULL;'''
     cursor = mysql.connection.cursor()
-    cursor.execute(sql)
-    data = cursor.fetchall()
+    cursor.execute(sql, [item_name])
+    data = cursor.fetchone()
 
-    results = []
-    for row in data:
-        item = result_dictionary(cursor, row)
+    if data:
+        recipe = result_dictionary(cursor, data)
+    else:
+        return jsonify({"error": "item not found"}), 404
 
-        results.append(item)
+    if realm:
+        if region:
+            # ah = Recipe(region=region, server=realm, download_data=True)
+            pass
+        else:
+            # ah = Recipe(server=realm)
+            pass
+        # recipe['auction_data'] = ah.calcStats([item_name])
 
-    return jsonify({"realms": results})
+    return jsonify(recipe)
