@@ -98,7 +98,7 @@ def get_recipes(item_name):
              FROM `tblDBCSpell`
              LEFT JOIN `tblDBCItem` ON `tblDBCItem`.`id` = `tblDBCSpell`.crafteditem
              WHERE `name` LIKE %s
-             OR `product` LIKE %s
+             OR tblDBCItem.name_enus LIKE %s
              AND skillline IS NOT NULL;'''
     cursor = mysql.connection.cursor()
     cursor.execute(sql, [item_name])
