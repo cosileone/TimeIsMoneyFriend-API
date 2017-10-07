@@ -103,12 +103,16 @@ def get_recipes(item_name):
     cursor = mysql.connection.cursor()
     likestring = "%" + item_name + "%"
     cursor.execute(sql, [likestring, likestring])
-    data = cursor.fetchone()
+    data = cursor.fetchall()
 
     if data:
-        recipe = result_dictionary(cursor, data)
+        results = []
+        for row in data:
+            recipe = result_dictionary(cursor, row)
+
+            results.append(recipe)
     else:
-        return jsonify({"error": "item not found"}), 404
+        return jsonify({"error": "no recipes found"}), 404
 
     if realm:
         if region:
@@ -119,4 +123,4 @@ def get_recipes(item_name):
             pass
         # recipe['auction_data'] = ah.calcStats([item_name])
 
-    return jsonify(recipe)
+    return jsonify({"recipes": results})
