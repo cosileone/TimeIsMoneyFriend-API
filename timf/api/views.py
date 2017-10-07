@@ -96,12 +96,13 @@ def get_recipes(item_name):
 
     sql = '''SELECT tblDBCSpell.*, tblDBCItem.name_enus AS product
              FROM `tblDBCSpell`
-             LEFT JOIN `tblDBCItem` ON `tblDBCItem`.`id` = `tblDBCSpell`.crafteditem
+             INNER JOIN `tblDBCItem` ON `tblDBCItem`.`id` = `tblDBCSpell`.crafteditem
              WHERE `name` LIKE %s
              OR tblDBCItem.name_enus LIKE %s
              AND skillline IS NOT NULL;'''
     cursor = mysql.connection.cursor()
-    cursor.execute(sql, [item_name])
+    likestring = "%" + item_name + "%"
+    cursor.execute(sql, [likestring, likestring])
     data = cursor.fetchone()
 
     if data:
