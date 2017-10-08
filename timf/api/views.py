@@ -94,12 +94,16 @@ def get_recipes(item_name):
     region = request.args.get('region')
     realm = request.args.get('realm')
 
-    sql = '''SELECT tblDBCSpell.*, tblDBCItem.name_enus AS product
+    sql = '''SELECT *
              FROM `tblDBCSpell`
-             INNER JOIN `tblDBCItem` ON `tblDBCItem`.`id` = `tblDBCSpell`.crafteditem
-             WHERE `name` LIKE %s
-             OR tblDBCItem.name_enus LIKE %s
-             AND skillline IS NOT NULL;'''
+             WHERE `tblDBCSpell`.id IN (SELECT `tblDBCItemReagents`.spell
+                                        FROM `tblDBCItemReagents`
+                                        WHERE reagent IN (SELECT tblDBCItem.id
+                                                          FROM tblDBCItem
+                                                          WHERE tblDBCItem.name_enus LIKE %s))
+             OR `tblDBCSpell`.name LIKE %s
+             AND `tblDBCSpell`.skillline IS NOT NULL;
+           '''
     cursor = mysql.connection.cursor()
     likestring = "%" + item_name + "%"
     cursor.execute(sql, [likestring, likestring])
@@ -123,4 +127,4 @@ def get_recipes(item_name):
             pass
         # recipe['auction_data'] = ah.calcStats([item_name])
 
-    return jsonify({"recipes": results})
+    return jsonify({"count": len(results), "recipes": results})
