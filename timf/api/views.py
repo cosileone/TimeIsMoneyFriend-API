@@ -1,4 +1,5 @@
 from flask import jsonify, request
+from collections import defaultdict
 
 from . import api
 from ..auctions.AuctionHouse import AuctionHouse
@@ -94,15 +95,22 @@ def get_recipes(item_name):
     region = request.args.get('region')
     realm = request.args.get('realm')
 
-    sql = '''SELECT *
-             FROM `tblDBCSpell`
-             WHERE `tblDBCSpell`.id IN (SELECT `tblDBCItemReagents`.spell
-                                        FROM `tblDBCItemReagents`
-                                        WHERE reagent IN (SELECT tblDBCItem.id
-                                                          FROM tblDBCItem
-                                                          WHERE tblDBCItem.name_enus LIKE %s))
-             OR `tblDBCSpell`.name LIKE %s
-             AND `tblDBCSpell`.skillline IS NOT NULL;
+    sql = '''SELECT spells.id,
+                    spells.name AS recipe,
+                    tradeskills.name AS tradeskill,
+                    items.id AS reagent_id,
+                    items.name_enus AS reagent,
+                    reagents.quantity
+            FROM `tblDBCItemReagents` AS reagents
+            INNER JOIN tblDBCItem AS items
+                ON reagent = items.id
+            INNER JOIN tblDBCSpell AS spells
+                ON spell = spells.id
+            INNER JOIN tblDBCSkillLines AS tradeskills
+                ON reagents.skillline = tradeskills.id
+            WHERE spells.name LIKE %s
+            OR items.name_enus LIKE %s
+            AND spells.skillline IS NOT NULL;
            '''
     cursor = mysql.connection.cursor()
     likestring = "%" + item_name + "%"
@@ -110,11 +118,27 @@ def get_recipes(item_name):
     data = cursor.fetchall()
 
     if data:
-        results = []
+        results = {}
         for row in data:
-            recipe = result_dictionary(cursor, row)
+            try:
+                reagents = results[row[1]]['reagents']
+            except KeyError:
+                reagents = []
+            reagents.append({
+                'id': row[3],
+                'reagent': row[4],
+                'quantity': float(row[5]),
+            })
 
-            results.append(recipe)
+            recipe = {
+                'id': row[0],
+                'name': row[1],
+                'tradeskill': row[2],
+                'reagents': reagents
+            }
+
+            results[row[1]] = recipe
+
     else:
         return jsonify({"error": "no recipes found"}), 404
 
@@ -127,4 +151,4 @@ def get_recipes(item_name):
             pass
         # recipe['auction_data'] = ah.calcStats([item_name])
 
-    return jsonify({"count": len(results), "recipes": results})
+    return jsonify({"count": len(results), "recipes": results.values()})
