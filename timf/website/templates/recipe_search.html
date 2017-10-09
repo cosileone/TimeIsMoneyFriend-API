@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Time is Money, Friend! - Welcome{% endblock title %}
+{% block title %}Recipe Search{% endblock title %}
 
 {% block body %}
 {% raw %}
@@ -64,7 +64,7 @@
                     <tbody>
                         <tr class="shopping-row" v-for="item in shoppingCart">
                             <td>
-                                <a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a>
+                                <a :href="'http://www.wowhead.com/item='+item.id" target="_blank">{{ item.name_enus }}</a>
                             </td>
                             <td class="center aligned">
                                 <div style="display: inline-block">
@@ -104,7 +104,7 @@
                     <tbody>
                         <tr v-for="item in results" class="item" @click="togglePin(item)">
                             <td>
-                                <div><a :href="'http://www.wowhead.com/item='+item.id">{{ item.name_enus }}</a></div>
+                                <div><a :href="'http://www.wowhead.com/item='+item.id" target="_blank">{{ item.name_enus }}</a></div>
                             </td>
                             <td class="right aligned">
                                 <i v-show="inCart(item)" class="red pin icon"></i>
@@ -121,6 +121,8 @@
 
 {% block javascript %}
 <script>
+    Vue.use(VeeValidate);
+
     var app = new Vue({
         el: '#app',
         components: {},
@@ -251,6 +253,16 @@
                 });
             },
         },
+    });
+
+    $('#server-select').dropdown({
+        allowTab: false,
+        forceSelection: false,
+        duration: 100,
+        onChange: function(text, value, $selectedItem) {
+            app.selectedRealm = $selectedItem.data('value');
+            app.selectedRegion = $selectedItem.data('region');
+        }
     });
 
 </script>
