@@ -101,7 +101,7 @@ def get_recipes(item_name):
                     items.id AS reagent_id,
                     items.name_enus AS reagent,
                     reagents.quantity
-            FROM `tblDBCItemReagents` AS reagents
+            FROM tblDBCItemReagents AS reagents
             INNER JOIN tblDBCItem AS items
                 ON reagent = items.id
             INNER JOIN tblDBCSpell AS spells

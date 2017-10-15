@@ -127,8 +127,8 @@ class AuctionHouse(object):
             'total_quantity': total_quantity,
             'total_volume': float("{0:.4f}".format(total_volume/10000)),
             'mean_buyout': float("{0:.4f}".format(mean_buyout/10000)),
-            'cheapest_buyout': min_buyout/10000,
-            'cheapest_bid': min_bid/10000
+            'cheapest_buyout': float("{0:.4f}".format(min_buyout/10000)),
+            'cheapest_bid': float("{0:.4f}".format(min_bid/10000))
         }
 
         return results
