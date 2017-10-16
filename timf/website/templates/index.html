@@ -28,19 +28,18 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="ten wide field">
+                            <div class="ten wide field" :class="{'error': errors['query']}">
                                 <div class="ui action input">
-                                    <input name="name" v-model="searchQuery" v-validate="'required'"
-                                           :class="{'red': errors.has('name')}"
-                                           placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
+                                    <input name="query" v-model="searchQuery" @input="removeError('query')"
+                                           placeholder='Search for anything (i.e. "Health Potion" or 124125)' tabindex="1" autofocus>
                                     <button id="submitButton" class="ui icon primary button">
                                         <i class="search icon"></i>
                                     </button>
                                 </div>
+                                <div v-show="errors && errors['query']" class="ui red small message">{{ errors['query'] }}</div>
                             </div>
                         </div>
                     </div>
-                    <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
                 </form>
             </div>
         </div>
@@ -122,13 +121,12 @@
 
 {% block javascript %}
 <script>
-    Vue.use(VeeValidate);
-
     var app = new Vue({
         el: '#app',
         components: {},
         computed: {},
         data: {
+            errors: {},
             selectedRealm: null,
             selectedRegion: null,
             searchQuery: null,
@@ -169,10 +167,9 @@
             submitSearch: function () {
                 let url = '/api/item';
                 let vm = this;
-                vm.results = [];
 
                 if (this.searchQuery) {
-                    $('#submitButton').addClass('loading');
+                    $('#submitButton').addClass('loading disabled');
 
                     let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
                     if (is_number) {
@@ -185,14 +182,17 @@
                         url: url,
                         type: 'get'
                     }).done(function (response) {
+                        vm.results = [];
                         if (is_number) {
                             vm.results.push(response);
                         } else {
                             for (let i of response.items)
                             vm.results.push(i)
                         }
-                    }).always(function(){
-                        $('#submitButton').removeClass('loading');
+                    }).fail(function (response) {
+                        Vue.set(vm.errors, 'query', response.responseJSON['error']);
+                    }).always(function () {
+                        $('#submitButton').removeClass('loading disabled');
                     });
                 } else {
                     return
@@ -245,14 +245,19 @@
                 $WowheadPower.refreshLinks();
             }, 100),
             shopAll: function() {
-                $('#fetch-prices').addClass('loading');
+                $('#fetch-prices').addClass('loading disabled');
 
                 let promises = this.shoppingCart.map(this.auctionData);
 
-                $.when.apply(null, promises).done(function() {
-                    $('#fetch-prices').removeClass('loading');
+                $.when.apply(null, promises).always(function() {
+                    $('#fetch-prices').removeClass('loading disabled');
                 });
             },
+            removeError: function (fieldName) {
+                if (this.errors.hasOwnProperty(fieldName)) {
+                    delete this.errors[fieldName];
+                }
+            }
         },
     });
 

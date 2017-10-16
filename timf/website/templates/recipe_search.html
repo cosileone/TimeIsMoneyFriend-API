@@ -30,7 +30,7 @@
                             </div>
                             <div class="ten wide field">
                                 <div class="ui action input">
-                                    <input name="name" v-model="searchQuery" v-validate="'required'"
+                                    <input name="name" v-model="searchQuery"
                                            :class="{'red': errors.has('name')}"
                                            placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
                                     <button id="submitButton" class="ui icon primary button">
@@ -166,7 +166,7 @@
                 return null;
             },
             submitSearch: function () {
-                let url = '/api/item';
+                let url = '/api/recipe/';
                 let vm = this;
                 vm.results = [];
 
@@ -248,7 +248,7 @@
 
                 let promises = this.shoppingCart.map(this.auctionData);
 
-                $.when.apply(null, promises).done(function() {
+                $.when.apply(null, promises).always(function() {
                     $('#fetch-prices').removeClass('loading');
                 });
             },
