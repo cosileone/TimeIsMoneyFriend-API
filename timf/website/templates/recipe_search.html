@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome{% endblock title %}
+{% block title %}Recipe Search{% endblock title %}
 
 {% block body %}
 {% raw %}
@@ -21,25 +21,26 @@
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Choose your Realm</div>
                                     <div class="menu">
-                                        <div class="item" v-for="server in realmList" :key="server.id" :data-value="server.slug" :data-region="server.region" :value="server">
+                                        <div class="item" v-for="server in realmList" :data-value="server.slug" :data-region="server.region" :value="server">
                                             <i :class="server.region.toLowerCase()+' flag'"></i>
                                             {{ server.name }} ({{ server.region }})
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="ten wide field" :class="{'error': errors['query']}">
+                            <div class="ten wide field">
                                 <div class="ui action input">
-                                    <input name="query" v-model="searchQuery" @input="removeError('query')"
-                                           placeholder='Search for anything (i.e. "Potion" or 124125)' tabindex="1" autofocus>
+                                    <input name="name" v-model="searchQuery"
+                                           :class="{'red': errors.has('name')}"
+                                           placeholder='Search for anything (i.e. "Obliterum" or 124125)' tabindex="1" autofocus>
                                     <button id="submitButton" class="ui icon primary button">
                                         <i class="search icon"></i>
                                     </button>
                                 </div>
-                                <div v-show="errors && errors['query']" class="ui red small message">{{ errors['query'] }}</div>
                             </div>
                         </div>
                     </div>
+                    <!--<span v-show="errors.has('name')" class="ui red">{{ errors.first('name') }}</span>-->
                 </form>
             </div>
         </div>
@@ -52,7 +53,7 @@
                     <thead>
                         <tr>
                             <th>
-                                <span>Shopping List</span> <small>(select your realm for prices)</small>
+                                <span>Shopping List</span> <small>(select a server to shop)</small>
                             </th>
                             <th></th>
                             <th class="right aligned">
@@ -61,7 +62,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="shopping-row" v-for="item in shoppingCart" :key="item.id">
+                        <tr class="shopping-row" v-for="item in shoppingCart">
                             <td>
                                 <a :href="'http://www.wowhead.com/item='+item.id" target="_blank">{{ item.name_enus }}</a>
                             </td>
@@ -101,13 +102,12 @@
             <div class="six wide column">
                 <table v-show="results.length" id="results" class="ui very compact selectable unstackable table">
                     <tbody>
-                        <tr v-for="item in results" :key="item.id" class="item" @click="togglePin(item)">
+                        <tr v-for="item in results" class="item" @click="togglePin(item)">
                             <td>
                                 <div><a :href="'http://www.wowhead.com/item='+item.id" target="_blank">{{ item.name_enus }}</a></div>
                             </td>
                             <td class="right aligned">
                                 <i v-show="inCart(item)" class="red pin icon"></i>
-                                <button class="mini ui teal icon button" @click="auctionData(item)"><i class="plus icon"></i></button>
                             </td>
                         </tr>
                     </tbody>
@@ -121,12 +121,13 @@
 
 {% block javascript %}
 <script>
+    Vue.use(VeeValidate);
+
     var app = new Vue({
         el: '#app',
         components: {},
         computed: {},
         data: {
-            errors: {},
             selectedRealm: null,
             selectedRegion: null,
             searchQuery: null,
@@ -165,11 +166,12 @@
                 return null;
             },
             submitSearch: function () {
-                let url = '/api/item';
+                let url = '/api/recipe/';
                 let vm = this;
+                vm.results = [];
 
                 if (this.searchQuery) {
-                    $('#submitButton').addClass('loading disabled');
+                    $('#submitButton').addClass('loading');
 
                     let is_number = Number.isInteger(Number.parseInt(this.searchQuery));
                     if (is_number) {
@@ -182,17 +184,14 @@
                         url: url,
                         type: 'get'
                     }).done(function (response) {
-                        vm.results = [];
                         if (is_number) {
                             vm.results.push(response);
                         } else {
                             for (let i of response.items)
                             vm.results.push(i)
                         }
-                    }).fail(function (response) {
-                        Vue.set(vm.errors, 'query', response.responseJSON['error']);
-                    }).always(function () {
-                        $('#submitButton').removeClass('loading disabled');
+                    }).always(function(){
+                        $('#submitButton').removeClass('loading');
                     });
                 } else {
                     return
@@ -219,7 +218,7 @@
             },
             inCart: function(item) {
                 for (let i = 0; i < this.shoppingCart.length; i++) {
-                    if (this.shoppingCart[i].id === item.id) {
+                    if (this.shoppingCart[i] === item) {
                         return true
                     }
                 }
@@ -230,13 +229,13 @@
                     this.shoppingCart.push(item);
                 }
             },
-            removeFromCart: function(id) {
-                var index = _.findIndex(this.shoppingCart, function (x) { return x.id === id });
+            removeFromCart: function(item) {
+                var index = this.shoppingCart.indexOf(item);
                 this.shoppingCart.splice(index, 1);
             },
             togglePin: function (item) {
                 if (this.inCart(item)) {
-                    this.removeFromCart(item.id);
+                    this.removeFromCart(item);
                 } else {
                     this.addToCart(item);
                 }
@@ -245,19 +244,14 @@
                 $WowheadPower.refreshLinks();
             }, 100),
             shopAll: function() {
-                $('#fetch-prices').addClass('loading disabled');
+                $('#fetch-prices').addClass('loading');
 
                 let promises = this.shoppingCart.map(this.auctionData);
 
                 $.when.apply(null, promises).always(function() {
-                    $('#fetch-prices').removeClass('loading disabled');
+                    $('#fetch-prices').removeClass('loading');
                 });
             },
-            removeError: function (fieldName) {
-                if (this.errors.hasOwnProperty(fieldName)) {
-                    delete this.errors[fieldName];
-                }
-            }
         },
     });
 
@@ -270,11 +264,6 @@
             app.selectedRegion = $selectedItem.data('region');
         }
     });
-
-{#    http://rubaxa.github.io/Sortable/ #}
-{#    Sortable.create(shoppingList, {#}
-{#        animation: 150#}
-{#    });#}
 
 </script>
 {% endblock javascript %}

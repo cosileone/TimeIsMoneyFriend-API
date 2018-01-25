@@ -1,9 +1,26 @@
 from flask import jsonify, request
+from collections import defaultdict
 
 from . import api
 from ..auctions.AuctionHouse import AuctionHouse
 from run import mysql
 from utils import result_dictionary
+
+
+@api.route('/realms', methods=['GET'])
+def list_servers():
+    sql = '''SELECT id, name, region, slug, population, house from tblRealm where region in ('US', 'EU');'''
+    cursor = mysql.connection.cursor()
+    cursor.execute(sql)
+    data = cursor.fetchall()
+
+    results = []
+    for row in data:
+        item = result_dictionary(cursor, row)
+
+        results.append(item)
+
+    return jsonify({"realms": results})
 
 
 @api.route('/items', methods=['GET'])
@@ -73,17 +90,65 @@ def resolve_item_name():
     return jsonify({"items": results})
 
 
-@api.route('/realms', methods=['GET'])
-def list_servers():
-    sql = '''SELECT id, name, region, slug, population, house from tblRealm where region in ('US', 'EU');'''
+@api.route('/recipe/<string:item_name>', methods=['GET'])
+def get_recipes(item_name):
+    region = request.args.get('region')
+    realm = request.args.get('realm')
+
+    sql = '''SELECT spells.id,
+                    spells.name AS recipe,
+                    tradeskills.name AS tradeskill,
+                    items.id AS reagent_id,
+                    items.name_enus AS reagent,
+                    reagents.quantity
+            FROM tblDBCItemReagents AS reagents
+            INNER JOIN tblDBCItem AS items
+                ON reagent = items.id
+            INNER JOIN tblDBCSpell AS spells
+                ON spell = spells.id
+            INNER JOIN tblDBCSkillLines AS tradeskills
+                ON reagents.skillline = tradeskills.id
+            WHERE spells.name LIKE %s
+            OR items.name_enus LIKE %s
+            AND spells.skillline IS NOT NULL;
+           '''
     cursor = mysql.connection.cursor()
-    cursor.execute(sql)
+    likestring = "%" + item_name + "%"
+    cursor.execute(sql, [likestring, likestring])
     data = cursor.fetchall()
 
-    results = []
-    for row in data:
-        item = result_dictionary(cursor, row)
+    if data:
+        results = {}
+        for row in data:
+            try:
+                reagents = results[row[1]]['reagents']
+            except KeyError:
+                reagents = []
+            reagents.append({
+                'id': row[3],
+                'reagent': row[4],
+                'quantity': float(row[5]),
+            })
 
-        results.append(item)
+            recipe = {
+                'id': row[0],
+                'name': row[1],
+                'tradeskill': row[2],
+                'reagents': reagents
+            }
 
-    return jsonify({"realms": results})
+            results[row[1]] = recipe
+
+    else:
+        return jsonify({"error": "no recipes found"}), 404
+
+    if realm:
+        if region:
+            # ah = Recipe(region=region, server=realm, download_data=True)
+            pass
+        else:
+            # ah = Recipe(server=realm)
+            pass
+        # recipe['auction_data'] = ah.calcStats([item_name])
+
+    return jsonify({"count": len(results), "recipes": results.values()})

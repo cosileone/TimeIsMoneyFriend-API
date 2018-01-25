@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% endblock title %}</title>
+    <title>Time is Money, Friend! - {% block title %}{% endblock title %}</title>
 {#    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">#}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/semantic-ui/semantic.min.css') }}">
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/font-awesome-4.7.0/css/font-awesome.css') }}">#}
@@ -12,7 +12,6 @@
     <script type="text/javascript" src="https://unpkg.com/jquery"></script>
     <script type="text/javascript" src="https://unpkg.com/vue"></script>
     <script type="text/javascript" src="https://unpkg.com/vuex"></script>
-    <script type="text/javascript" src="https://unpkg.com/vee-validate"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='vendor/semantic-ui/semantic.min.js') }}"></script>
 {#    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>#}
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.4/lodash.min.js"></script>
@@ -23,7 +22,7 @@
 {% endblock body %}
 </body>
 
-<script type="text/javascript" src="//wow.zamimg.com/widgets/power.js"></script>
+<script type="text/javascript" src="https://wow.zamimg.com/widgets/power.js"></script>
 <script>var wowhead_tooltips = { "iconizelinks": true };</script>
 
 {% block javascript %}
